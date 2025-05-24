@@ -58,6 +58,7 @@ final class SuiteConfiguration {
     onPlatform: null,
     metadata: null,
     ignoreTimeouts: null,
+    suiteLoadTimeout: null,
   );
 
   /// Whether or not duplicate test (or group) names are allowed within the same
@@ -109,10 +110,9 @@ final class SuiteConfiguration {
   final List<CompilerSelection>? compilerSelections;
 
   /// The set of runtimes on which to run tests.
-  List<String> get runtimes =>
-      _runtimes == null
-          ? const ['vm']
-          : List.unmodifiable(_runtimes.map((runtime) => runtime.name));
+  List<String> get runtimes => _runtimes == null
+      ? const ['vm']
+      : List.unmodifiable(_runtimes.map((runtime) => runtime.name));
   final List<RuntimeSelection>? _runtimes;
 
   /// Configuration for particular tags.
@@ -153,6 +153,11 @@ final class SuiteConfiguration {
   final bool? _ignoreTimeouts;
   bool get ignoreTimeouts => _ignoreTimeouts ?? false;
 
+  /// The timeout for loading a test suite.
+  final Timeout? _suiteLoadTimeout;
+  Timeout get suiteLoadTimeout =>
+      _suiteLoadTimeout ?? const Timeout(Duration(minutes: 12));
+
   factory SuiteConfiguration({
     required bool? allowDuplicateTestNames,
     required bool? allowTestRandomization,
@@ -165,7 +170,7 @@ final class SuiteConfiguration {
     required Map<BooleanSelector, SuiteConfiguration>? tags,
     required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     required bool? ignoreTimeouts,
-
+    required Timeout? suiteLoadTimeout,
     // Test-level configuration
     required Timeout? timeout,
     required bool? verboseTrace,
@@ -189,6 +194,7 @@ final class SuiteConfiguration {
       tags: tags,
       onPlatform: onPlatform,
       ignoreTimeouts: ignoreTimeouts,
+      suiteLoadTimeout: suiteLoadTimeout,
       metadata: Metadata(
         timeout: timeout,
         verboseTrace: verboseTrace,
@@ -219,6 +225,7 @@ final class SuiteConfiguration {
     Map<BooleanSelector, SuiteConfiguration>? tags,
     Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     bool? ignoreTimeouts,
+    Timeout? suiteLoadTimeout,
 
     // Test-level configuration
     Timeout? timeout,
@@ -241,6 +248,7 @@ final class SuiteConfiguration {
     tags: tags,
     onPlatform: onPlatform,
     ignoreTimeouts: ignoreTimeouts,
+    suiteLoadTimeout: suiteLoadTimeout,
     timeout: timeout,
     verboseTrace: verboseTrace,
     chainStackTraces: chainStackTraces,
@@ -281,6 +289,7 @@ final class SuiteConfiguration {
     required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     required Metadata? metadata,
     required bool? ignoreTimeouts,
+    required Timeout? suiteLoadTimeout,
   }) : _allowDuplicateTestNames = allowDuplicateTestNames,
        _allowTestRandomization = allowTestRandomization,
        _jsTrace = jsTrace,
@@ -291,6 +300,7 @@ final class SuiteConfiguration {
        tags = _map(tags),
        onPlatform = _map(onPlatform),
        _ignoreTimeouts = ignoreTimeouts,
+       _suiteLoadTimeout = suiteLoadTimeout,
        _metadata = metadata ?? Metadata.empty;
 
   /// Creates a new [SuiteConfiguration] that takes its configuration from
@@ -314,6 +324,7 @@ final class SuiteConfiguration {
         runtimes: null,
         compilerSelections: null,
         ignoreTimeouts: null,
+        suiteLoadTimeout: null,
       );
 
   /// Returns an unmodifiable copy of [input].
@@ -350,8 +361,9 @@ final class SuiteConfiguration {
       jsTrace: other._jsTrace ?? _jsTrace,
       runSkipped: other._runSkipped ?? _runSkipped,
       dart2jsArgs: dart2jsArgs.toList()..addAll(other.dart2jsArgs),
-      testSelections:
-          testSelections.isEmpty ? other.testSelections : testSelections,
+      testSelections: testSelections.isEmpty
+          ? other.testSelections
+          : testSelections,
       precompiledPath: other.precompiledPath ?? precompiledPath,
       compilerSelections: other.compilerSelections ?? compilerSelections,
       runtimes: other._runtimes ?? _runtimes,
@@ -359,6 +371,7 @@ final class SuiteConfiguration {
       onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
       ignoreTimeouts: other._ignoreTimeouts ?? _ignoreTimeouts,
       metadata: metadata.merge(other.metadata),
+      suiteLoadTimeout: other._suiteLoadTimeout ?? _suiteLoadTimeout,
     );
     return config._resolveTags();
   }
@@ -379,6 +392,7 @@ final class SuiteConfiguration {
     Map<BooleanSelector, SuiteConfiguration>? tags,
     Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     bool? ignoreTimeouts,
+    Timeout? suiteLoadTimeout,
 
     // Test-level configuration
     Timeout? timeout,
@@ -404,6 +418,7 @@ final class SuiteConfiguration {
       tags: tags ?? this.tags,
       onPlatform: onPlatform ?? this.onPlatform,
       ignoreTimeouts: ignoreTimeouts ?? _ignoreTimeouts,
+      suiteLoadTimeout: suiteLoadTimeout ?? _suiteLoadTimeout,
       metadata: _metadata.change(
         timeout: timeout,
         verboseTrace: verboseTrace,
@@ -441,14 +456,16 @@ final class SuiteConfiguration {
       tags: tags,
       onPlatform: onPlatform,
       ignoreTimeouts: _ignoreTimeouts,
+      suiteLoadTimeout: suiteLoadTimeout,
       metadata: _metadata,
     );
   }
 
   /// Throws a [FormatException] if this refers to any undefined runtimes.
   void validateRuntimes(List<Runtime> allRuntimes) {
-    var validVariables =
-        allRuntimes.map((runtime) => runtime.identifier).toSet();
+    var validVariables = allRuntimes
+        .map((runtime) => runtime.identifier)
+        .toSet();
     _metadata.validatePlatformSelectors(validVariables);
 
     var runtimes = _runtimes;
