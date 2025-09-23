@@ -1,3 +1,13 @@
+## 0.6.13-wip
+
+* Restrict to latest version of analyzer package.
+* Require Dart 3.7
+* Add `--coverage-path` and `--branch-coverage` options to `dart test`.
+
+## 0.6.12
+
+* Expand pub constraint to allow the latest `analyzer`.
+
 ## 0.6.11
 
 * Graduate native assets from experiment to preview.

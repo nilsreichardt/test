@@ -1,3 +1,14 @@
+## 0.7.8-wip
+
+* Add a zone function available from the test suite `main` that allows creating
+  channels to the test runner.
+* Restrict to latest version of analyzer package.
+* Require Dart 3.7
+
+## 0.7.7
+
+* Expand pub constraint to allow the latest `analyzer`.
+
 ## 0.7.6
 
 * Fix an assertion failure when using `setUpAll` or `tearDownAll` and running
