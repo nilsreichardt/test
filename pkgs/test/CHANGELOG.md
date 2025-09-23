@@ -17,6 +17,9 @@
 ## 1.27.0
 
 * Add `--coverage-path` and `--branch-coverage` options to `dart test`.
+* Remove the default 12 minute timeout to compile and load test suites.
+* Add a `--suite-load-timeout` argument to allow configuring a timeout for
+  compiling and loading individual test suites.
 * Serve dart2wasm source map files.
 * Fix Node.js dart2wasm tests on windows.
 * Doc edit: clarify in README that a platform selector includes the compiler.
